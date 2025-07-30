@@ -1,0 +1,26 @@
+/* static/style.css */
+body {
+    font-family: Arial, sans-serif;
+    margin: 2em;
+    background-color: #f4f4f4;
+}
+header {
+    background-color: #444;
+    color: white;
+    padding: 1em;
+}
+nav a {
+    color: white;
+    margin-right: 1em;
+    text-decoration: none;
+}
+main {
+    background-color: white;
+    padding: 2em;
+    border-radius: 8px;
+}
+footer {
+    margin-top: 2em;
+    text-align: center;
+    color: #666;
+}

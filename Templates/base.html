@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Music App{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+    <h1>🎵 Music App</h1>
+    <nav>
+        <a href="/">Inicio</a>
+        <a href="/auth/register">Registrarse</a>
+        <a href="/auth/login">Iniciar sesión</a>
+        <a href="/auth/logout">Cerrar sesión</a>
+    </nav>
+</header>
+<main>
+    {% block content %}{% endblock %}
+</main>
+<footer>
+    <p>&copy; 2025 Music App</p>
+</footer>
+</body>
+</html>
