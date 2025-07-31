@@ -1,8 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from jose import JWTError, jwt
@@ -15,7 +15,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -35,7 +35,7 @@ def authenticate_user(db: Session, email: str, password: str):
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + config.ACCESS_TOKEN_EXPIRE
+    expire = datetime.utcnow() + config.ACCESS_TOKEN_EXPIRE  # ✅ corregido
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
 
@@ -57,7 +57,7 @@ def login(
         return templates.TemplateResponse("login.html", {"request": request, "error": "Email o contraseña incorrectos"}, status_code=401)
 
     token = create_access_token(data={"sub": user.email})
-    response = RedirectResponse(url="/", status_code=303)
+    response = RedirectResponse(url="/dashboard", status_code=303)
     response.set_cookie(key="access_token", value=token, httponly=True)
     return response
 
@@ -83,7 +83,7 @@ def register(
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return RedirectResponse(url="/auth/login", status_code=303)
+    return RedirectResponse(url="/login", status_code=303)
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
