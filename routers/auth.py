@@ -35,7 +35,7 @@ def authenticate_user(db: Session, email: str, password: str):
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=config.ACCESS_TOKEN_EXPIRE)
+    expire = datetime.utcnow() + config.ACCESS_TOKEN_EXPIRE
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
 
