@@ -1,6 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Panel de Usuario{% endblock %}
+
 {% block content %}
-<h2>Bienvenido, {{ user.email }}</h2>
-<p>Has iniciado sesión correctamente.</p>
+  <h2>Bienvenido, {{ user.email if user else "invitado" }}</h2>
+
+  <section>
+    <h3>Gestión de actividades</h3>
+    <a href="/activities/create">Crear nueva actividad</a><br>
+    <a href="/activities/list">Ver todas las actividades</a>
+  </section>
+
+  <section>
+    <h3>Gestión de cuestionarios</h3>
+    <a href="/quizzes/create">Crear nuevo cuestionario</a><br>
+    <a href="/quizzes/list">Ver todos los cuestionarios</a>
+  </section>
 {% endblock %}

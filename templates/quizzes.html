@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Cuestionarios</h2>
+    <a href="/quizzes/create">Crear nuevo cuestionario</a>
+    <ul>
+        {% for quiz in quizzes %}
+            <li>
+                <strong>{{ quiz.title }}</strong> - {{ quiz.description or "Sin descripción" }}
+                <a href="/quizzes/edit/{{ quiz.id }}">Editar</a> |
+                <a href="/quizzes/delete/{{ quiz.id }}" onclick="return confirm('¿Eliminar este cuestionario?')">Eliminar</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

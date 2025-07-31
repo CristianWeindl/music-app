@@ -11,7 +11,7 @@ import config
 from database import get_db
 from models import User
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -104,3 +104,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     if user is None:
         raise credentials_exception
     return user
+
+
+@router.get("/logout")
+def logout():
+    response = RedirectResponse(url="/")
+    response.delete_cookie(key="access_token")
+    return response
