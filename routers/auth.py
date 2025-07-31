@@ -15,11 +15,24 @@ templates = Jinja2Templates(directory="templates")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# Nuevo esquema para obtener token desde cookie
+async def oauth2_scheme_cookie(access_token: str = Cookie(None)):
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No token cookie found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return access_token
+
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
+
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
+
 
 def authenticate_user(db: Session, email: str, password: str):
     user = db.query(User).filter(User.email == email).first()
@@ -27,15 +40,18 @@ def authenticate_user(db: Session, email: str, password: str):
         return False
     return user
 
+
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + config.ACCESS_TOKEN_EXPIRE
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
 
+
 @router.get("/login", response_class=HTMLResponse)
 def login_form(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
+
 
 @router.post("/login")
 def login(
@@ -47,17 +63,21 @@ def login(
     user = authenticate_user(db, email, password)
     if not user:
         return templates.TemplateResponse(
-            "login.html", {"request": request, "error": "Email o contraseña incorrectos"}, status_code=401
+            "login.html",
+            {"request": request, "error": "Email o contraseña incorrectos"},
+            status_code=401
         )
+
     token = create_access_token(data={"sub": user.email})
     response = RedirectResponse(url="/dashboard", status_code=303)
-    # Set cookie with path="/" so it's sent on all routes
-    response.set_cookie(key="access_token", value=token, httponly=True, path="/")
+    response.set_cookie(key="access_token", value=token, httponly=True)
     return response
+
 
 @router.get("/register", response_class=HTMLResponse)
 def register_form(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
+
 
 @router.post("/register")
 def register(
@@ -69,8 +89,11 @@ def register(
     existing_user = db.query(User).filter(User.email == email).first()
     if existing_user:
         return templates.TemplateResponse(
-            "register.html", {"request": request, "error": "Email ya registrado"}, status_code=400
+            "register.html",
+            {"request": request, "error": "Email ya registrado"},
+            status_code=400
         )
+
     hashed_password = get_password_hash(password)
     new_user = User(email=email, hashed_password=hashed_password)
     db.add(new_user)
@@ -78,43 +101,30 @@ def register(
     db.refresh(new_user)
     return RedirectResponse(url="/login", status_code=303)
 
-# Aquí el cambio importante: obtenemos el token desde la cookie
-async def get_current_user(
-    access_token: str = Cookie(None),
-    db: Session = Depends(get_db)
-):
-    if access_token is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="No autenticado",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+
+# Cambiado para usar el token desde la cookie
+async def get_current_user(token: str = Depends(oauth2_scheme_cookie), db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="No se pudieron validar las credenciales",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
     try:
-        payload = jwt.decode(access_token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="No autenticado",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+            raise credentials_exception
     except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="No autenticado",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise credentials_exception
+
     user = db.query(User).filter(User.email == email).first()
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="No autenticado",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise credentials_exception
     return user
+
 
 @router.get("/logout")
 def logout():
     response = RedirectResponse(url="/")
-    response.delete_cookie(key="access_token", path="/")
+    response.delete_cookie(key="access_token")
     return response
