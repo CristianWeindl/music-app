@@ -1,2 +1,24 @@
-# Auto detect text files and perform LF normalization
+# .gitattributes
+# Normaliza saltos de línea en todos los sistemas
 * text=auto
+
+# Asegura que los archivos de texto usen LF (estándar en servidores)
+*.py text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.txt text eol=lf
+
+# Archivos binarios
+*.db binary
+*.mp3 binary
+*.wav binary
+*.ogg binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
