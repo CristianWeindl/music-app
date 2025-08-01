@@ -1,78 +1,71 @@
-# Music App
+# 🎵 MusicApp Edu
 
-Aplicación web para gestión y práctica musical con autenticación JWT, actividades y cuestionarios.
+Plataforma educativa de música para secundaria, diseñada para profesores que quieren evaluar de forma continua y gamificada.
 
-## Características
+Los alumnos avanzan por **niveles**, completan actividades multimedia y practican sin presión.  
+Tú, como profesor, ves su progreso, notas y tiempo invertido, y generas la **nota teórica final** para el boletín.
 
-- Registro e inicio de sesión con autenticación JWT.
-- Gestión de usuarios.
-- Actividades interactivas (escucha guiada, cuestionarios).
-- Panel de usuario protegido.
-- Basado en FastAPI y SQLAlchemy con base de datos SQLite.
-- Interfaz con plantillas Jinja2 y estilos CSS.
+---
 
-## Requisitos
+## 🌟 Características principales
 
-- Python 3.8+
-- Virtualenv (opcional pero recomendado)
+- ✅ **Autenticación con correo institucional**
+- ✅ **Progreso por niveles** (no actividades sueltas)
+- ✅ **Actividades multimedia**: audio, video, imágenes
+- ✅ **Tipos de ejercicios**:
+  - Test (opción única)
+  - Completar huecos con clic
+  - Clasificación de obras por características
+- ✅ **Evaluación continua**: se guarda tiempo, intentos y evolución
+- ✅ **Nota final calculada** (último intento prevalece)
+- ✅ **Gamificación**: ranking por niveles completados (no por notas)
+- ✅ **Panel de administrador**:
+  - Ver progreso por alumno
+  - Exportar notas a CSV
+  - Gestionar niveles y actividades
+- ✅ **Recuperación de contraseña por email**
 
-## Instalación
+---
 
-1. Clona el repositorio
+## 🛠 Tecnología utilizada
 
-```bash
-git clone https://github.com/CristianWeindl/music-app.git
-cd music-app
+- **FastAPI** – Backend
+- **SQLAlchemy** – ORM
+- **PostgreSQL** – Base de datos (en Render)
+- **Jinja2** – Plantillas HTML
+- **Bootstrap 5** – Diseño responsive
+- **Render.com** – Despliegue
 
-2. Crea y activa entorno virtual (opcional pero recomendado)
+---
 
-bash
-python3 -m venv .venv
-source .venv/bin/activate  # Linux/Mac
-.venv\Scripts\activate     # Windows
+## 🚀 Despliegue en Render
 
-3. Instala dependencias
+1. Crea una cuenta en [Render.com](https://render.com)
+2. Conecta tu repositorio de GitHub
+3. Render detectará automáticamente `render.yaml`
+4. El servicio y la base de datos se crearán automáticamente
+5. Tu app estará disponible en `https://music-app-edu.onrender.com`
 
-bash
-pip install -r requirements.txt
+> 🔐 Asegúrate de configurar:
+> - `SMTP_USERNAME` y `SMTP_PASSWORD` (usa una App Password de Gmail)
+> - `ALLOWED_INSTITUTIONAL_DOMAINS` (dominios permitidos para registro)
 
-4. Ejecuta la aplicación
+---
 
-bash
-unicorn main:app --reload
+## 🧪 Credenciales de prueba
 
-5. Abre en navegador
+### Profesor (admin)
+- **Email**: `profesor@instituto-escolar.es`
+- **Contraseña**: `123456`
 
-cpp
-http://127.0.0.1:8000
+### Alumno de ejemplo
+- **Email**: `alumno@instituto-escolar.es`
+- **Contraseña**: `123456`
+- **Nombre**: Juan Pérez
+- **Curso**: 1ºA
 
-Uso básico
-Regístrate en /auth/register
+> ⚠️ Cambia estas contraseñas en producción.
 
-Inicia sesión en /auth/login
+---
 
-Accede a actividades protegidas en /activities/quiz y otras rutas
-
-Cierra sesión en /auth/logout
-
-Estructura del proyecto
-main.py: Archivo principal para levantar FastAPI
-
-routers/auth.py: Rutas y lógica de autenticación
-
-routers/activities.py: Rutas de actividades
-
-models.py: Definición de modelos de base de datos
-
-database.py: Configuración y sesión de base de datos
-
-templates/: Plantillas HTML
-
-static/: Archivos estáticos (CSS)
-
-config.py: Configuración general
-
-Autor
-Cristian Weindl
-
-# music-app
+## 📂 Estructura del proyecto

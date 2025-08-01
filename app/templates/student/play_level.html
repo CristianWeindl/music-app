@@ -1,0 +1,266 @@
+<!-- templates/student/play_level.html -->
+{% extends "base.html" %}
+
+{% block title %}Nivel {{ level.order }}: {{ level.title }} - MusicApp Edu{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/student/dashboard">Inicio</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Nivel {{ level.order }}</li>
+      </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2>
+        <span class="badge bg-primary me-2">{{ level.order }}</span>
+        {{ level.title }}
+      </h2>
+      <span id="timer" class="text-muted">Tiempo: 00:00</span>
+    </div>
+
+    <p class="lead">{{ level.description }}</p>
+
+    <!-- Barra de progreso -->
+    <div class="progress mb-4" style="height: 10px;">
+      <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+    </div>
+    <p><small>Progreso: <span id="progress-text">0</span> de {{ activities | length }} actividades</small></p>
+  </div>
+</div>
+
+<!-- Contenedor de actividades -->
+<div id="activity-container" class="card shadow-sm">
+  <div class="card-body p-4">
+    <!-- Las actividades se cargarán dinámicamente con JavaScript -->
+  </div>
+</div>
+
+<!-- Botón de envío (se muestra al final) -->
+<div id="submit-section" class="text-center mt-4" style="display: none;">
+  <button id="submit-btn" class="btn btn-success btn-lg px-5">
+    Entregar nivel
+  </button>
+</div>
+
+<!-- Modal de resultados -->
+<div class="modal fade" id="resultsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">🎉 ¡Nivel completado!</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Puntuación:</strong> <span id="final-score" class="fs-4"></span></p>
+        <p><strong>Tiempo total:</strong> <span id="total-time"></span></p>
+        <p><strong>Errores:</strong> <span id="error-count"></span></p>
+        <div id="feedback"></div>
+      </div>
+      <div class="modal-footer">
+        <a href="/student/dashboard" class="btn btn-secondary">Volver al inicio</a>
+        <a href="#" id="repeat-level-btn" class="btn btn-outline-primary">Repetir nivel</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Script principal -->
+<script>
+  // Datos iniciales (inyectados desde el backend)
+  const activities = {{ activities | tojson }};
+  let currentActivityIndex = 0;
+  let responses = {};
+  let startTime = new Date();
+  let timerInterval;
+
+  // Iniciar temporizador
+  function startTimer() {
+    const timerElement = document.getElementById('timer');
+    timerInterval = setInterval(() => {
+      const elapsed = Math.floor((new Date() - startTime) / 1000);
+      const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
+      const secs = (elapsed % 60).toString().padStart(2, '0');
+      timerElement.textContent = `Tiempo: ${mins}:${secs}`;
+    }, 1000);
+  }
+
+  // Actualizar barra de progreso
+  function updateProgress() {
+    const progress = Math.round(((currentActivityIndex) / activities.length) * 100);
+    document.getElementById('progress-bar').style.width = progress + '%';
+    document.getElementById('progress-text').textContent = currentActivityIndex;
+  }
+
+  // Mostrar actividad
+  function showActivity(index) {
+    const container = document.getElementById('activity-container');
+    const activity = activities[index];
+    let html = '';
+
+    html += `<h4>${activity.title}</h4>`;
+    if (activity.content) {
+      html += `<div class="mb-3">${activity.content}</div>`;
+    }
+
+    // Mostrar media (audio, video, imagen)
+    if (activity.media_type && activity.media_url) {
+      if (activity.media_type === 'audio') {
+        html += `<audio controls class="w-100 mb-3"><source src="${activity.media_url}" type="audio/mpeg">Tu navegador no soporta audio.</audio>`;
+      } else if (activity.media_type === 'video') {
+        html += `<video controls class="w-100 mb-3"><source src="${activity.media_url}" type="video/mp4">Tu navegador no soporta video.</video>`;
+      } else if (activity.media_type === 'image') {
+        html += `<img src="${activity.media_url}" class="img-fluid rounded mb-3" alt="Recurso">`;
+      }
+    }
+
+    // Tipo de actividad
+    if (activity.activity_type === 'multiple_choice') {
+      html += '<div class="list-group mt-3">';
+      activity.config.options.forEach((option, i) => {
+        html += `
+          <label class="list-group-item">
+            <input class="form-check-input me-1" type="radio" name="response" value="${option}" ${i === 0 ? 'checked' : ''}>
+            ${option}
+          </label>`;
+      });
+      html += '</div>';
+    }
+
+    else if (activity.activity_type === 'fill_gaps') {
+      const words = activity.config.words;  // Array de palabras para elegir
+      const text = activity.config.text_with_gaps;  // Texto con {{gap}} donde van las palabras
+
+      html += `<p class="border p-3 bg-light">${text}</p>`;
+
+      html += '<div class="mb-3">';
+      words.forEach(word => {
+        html += `<button type="button" class="btn btn-outline-secondary m-1 word-btn" data-word="${word}">${word}</button>`;
+      });
+      html += '</div>';
+
+      html += '<small class="text-muted">Haz clic en las palabras para colocarlas en orden.</small>';
+      html += '<input type="hidden" id="fill-gaps-response" value="">';
+    }
+
+    else if (activity.activity_type === 'classify_audio') {
+      html += '<p><strong>Selecciona todas las características que apliquen:</strong></p>';
+      Object.keys(activity.config.categories).forEach(category => {
+        const options = activity.config.categories[category];
+        const isSingle = activity.config.single_choice_categories?.includes(category);
+
+        html += `<h6>${category}</h6>`;
+        html += '<div class="mb-3">';
+        options.forEach(option => {
+          if (isSingle) {
+            html += `
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="${category}" value="${option}" ${option === options[0] ? 'checked' : ''}>
+                <label class="form-check-label">${option}</label>
+              </div>`;
+          } else {
+            html += `
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="${option}">
+                <label class="form-check-label">${option}</label>
+              </div>`;
+          }
+        });
+        html += '</div>';
+      });
+    }
+
+    container.querySelector('.card-body').innerHTML = html;
+
+    // Eventos para fill_gaps
+    if (activity.activity_type === 'fill_gaps') {
+      document.querySelectorAll('.word-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const input = document.getElementById('fill-gaps-response');
+          let current = input.value ? input.value.split(',') : [];
+          current.push(this.dataset.word);
+          input.value = current.join(',');
+          this.disabled = true;
+          this.classList.add('btn-success');
+        });
+      });
+    }
+  }
+
+  // Iniciar
+  window.onload = function () {
+    startTimer();
+    updateProgress();
+    showActivity(currentActivityIndex);
+
+    document.getElementById('submit-btn').addEventListener('click', submitLevel);
+  };
+
+  // Siguiente actividad (simulado, en este caso es todo a la vez)
+  // En una versión avanzada, se haría con AJAX, pero aquí mostramos todo y luego enviamos
+
+  function submitLevel() {
+    clearInterval(timerInterval);
+    const totalTime = Math.floor((new Date() - startTime) / 1000);
+    const mins = Math.floor(totalTime / 60);
+    const secs = totalTime % 60;
+    document.getElementById('total-time').textContent = `${mins} min ${secs} seg`;
+
+    // Recoger respuestas
+    let score = 0;
+    let maxScore = 0;
+    let errors = 0;
+    let feedback = '<h6>Resumen por actividad:</h6><ul>';
+
+    activities.forEach((activity, i) => {
+      let userResponse = null;
+      let isCorrect = false;
+
+      if (activity.activity_type === 'multiple_choice') {
+        const selected = document.querySelector(`input[name="response"]:checked`);
+        userResponse = selected ? selected.value : 'No respondido';
+        isCorrect = userResponse === activity.config.correct;
+      }
+
+      else if (activity.activity_type === 'fill_gaps') {
+        userResponse = document.getElementById('fill-gaps-response').value;
+        const correct = activity.config.correct.join(',');
+        isCorrect = userResponse === correct;
+      }
+
+      else if (activity.activity_type === 'classify_audio') {
+        userResponse = 'Respuesta múltiple';
+        isCorrect = false; // En una versión real, se compararía con la respuesta correcta
+      }
+
+      if (isCorrect) score += 10;
+      maxScore += 10;
+      if (!isCorrect) errors++;
+
+      feedback += `<li><strong>${activity.title}</strong>: ${isCorrect ? '✅ Correcto' : '❌ Incorrecto'}</li>`;
+    });
+
+    feedback += '</ul>';
+    const finalScore = Math.round((score / maxScore) * 10);
+    document.getElementById('final-score').textContent = `${finalScore}/10`;
+    document.getElementById('error-count').textContent = errors;
+    document.getElementById('feedback').innerHTML = feedback;
+
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('resultsModal'));
+    modal.show();
+
+    // Guardar respuesta (simulado)
+    // En la versión real, se haría un POST a /student/submit-level
+    document.getElementById('repeat-level-btn').href = `/student/play/${activity.level_id}`;
+  }
+</script>
+{% endblock %}

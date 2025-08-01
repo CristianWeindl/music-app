@@ -1,0 +1,115 @@
+<!-- templates/admin/leaderboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Ranking de Progreso - MusicApp Edu{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center">
+      <h2>
+        <i class="fas fa-crown me-2 text-warning"></i> 🏆 Ranking de Progreso
+      </h2>
+      <a href="/admin/dashboard" class="btn btn-outline-secondary btn-sm">
+        ← Volver al panel
+      </a>
+    </div>
+    <p class="text-muted">
+      Los alumnos avanzan al completar niveles.
+      Este ranking se basa en el <strong>número de niveles completados</strong>, no en las notas.
+    </p>
+  </div>
+</div>
+
+<!-- Tarjeta de resumen -->
+<div class="row mb-4">
+  <div class="col-md-6">
+    <div class="card bg-primary text-white">
+      <div class="card-body">
+        <h5 class="card-title">{{ leaderboard | length }}</h5>
+        <p class="card-text">Alumnos participando</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card bg-success text-white">
+      <div class="card-body">
+        <h5 class="card-title">
+          {{ leaderboard[0].completed_levels if leaderboard else 0 }}
+        </h5>
+        <p class="card-text">Niveles del líder</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lista del ranking -->
+<div class="card shadow-sm">
+  <div class="card-header bg-white">
+    <h5 class="mb-0">🏆 Clasificación general</h5>
+  </div>
+  <div class="card-body p-0">
+    <div class="list-group list-group-flush">
+      {% for student in leaderboard %}
+        <div class="list-group-item d-flex align-items-center py-3">
+          <!-- Posición -->
+          <div class="me-3">
+            {% if loop.index == 1 %}
+              <span class="badge bg-warning text-dark fs-6 rounded-circle" style="width: 32px; height: 32px;">🥇</span>
+            {% elif loop.index == 2 %}
+              <span class="badge bg-secondary text-white fs-6 rounded-circle" style="width: 32px; height: 32px;">🥈</span>
+            {% elif loop.index == 3 %}
+              <span class="badge bg-danger text-white fs-6 rounded-circle" style="width: 32px; height: 32px;">🥉</span>
+            {% else %}
+              <span class="badge bg-primary fs-6 rounded-circle" style="width: 32px; height: 32px;">{{ loop.index }}</span>
+            {% endif %}
+          </div>
+
+          <!-- Nombre y curso -->
+          <div class="flex-grow-1">
+            <h6 class="mb-0">{{ student.full_name }}</h6>
+            <small class="text-muted">Curso: {{ student.course }}</small>
+          </div>
+
+          <!-- Niveles completados -->
+          <div class="text-end">
+            <span class="badge bg-info text-dark fs-6 px-3 py-2">
+              {{ student.completed_levels }} niveles
+            </span>
+          </div>
+        </div>
+      {% else %}
+        <div class="list-group-item text-center text-muted">
+          Aún no hay alumnos en el ranking.
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Nota sobre gamificación -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="alert alert-info">
+      <strong>💡 Idea de clase:</strong>
+      Puedes proyectar este ranking al final de la semana y celebrar los avances.
+      Ej: "¡Esta semana, 5 alumnos han alcanzado el Nivel 5! ¡Enhorabuena!"
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Font Awesome para iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script>
+  // Opcional: recargar cada 5 minutos si se proyecta en clase
+  /*
+  setTimeout(() => {
+    location.reload();
+  }, 300000); // 5 minutos
+  */
+</script>
+{% endblock %}

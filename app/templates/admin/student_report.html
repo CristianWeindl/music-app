@@ -1,0 +1,124 @@
+<!-- templates/admin/student_report.html -->
+{% extends "base.html" %}
+
+{% block title %}Informe de {{ student.full_name }} - MusicApp Edu{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center">
+      <h2>
+        📊 Informe de <strong>{{ student.full_name }}</strong>
+      </h2>
+      <a href="/admin/dashboard" class="btn btn-outline-secondary btn-sm">
+        ← Volver al panel
+      </a>
+    </div>
+    <p class="text-muted">
+      Correo: <strong>{{ student.email }}</strong> |
+      Curso: <strong>{{ student.course }}</strong> |
+      Niveles completados: <strong>{{ student.completed_levels | length }}</strong>
+    </p>
+  </div>
+</div>
+
+<!-- Resumen de calificación final -->
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card bg-light">
+      <div class="card-body">
+        <h5 class="card-title">Nota final estimada (evaluación continua)</h5>
+        <p class="card-text fs-3 text-success">
+          <strong>{{ "%.2f"|format(final_average) }}/10</strong>
+        </p>
+        <small class="text-muted">
+          Calculada como la media de las últimas puntuaciones en cada nivel.
+          Esta nota se usará como <strong>calificación teórica</strong> en el boletín.
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detalle por nivel -->
+<div class="accordion" id="accordionLevels">
+  {% for level_id, level_data in report_by_level.items() %}
+    <div class="accordion-item mb-3 shadow-sm">
+      <h3 class="accordion-header">
+        <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ level_id }}">
+          <strong>Nivel {{ level_data.level.order }}:</strong> {{ level_data.level.title }}
+          <span class="ms-auto badge bg-primary rounded-pill">{{ level_data.activities | length }} actividades</span>
+        </button>
+      </h3>
+      <div id="collapse{{ level_id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" data-bs-parent="#accordionLevels">
+        <div class="accordion-body p-0">
+          <div class="table-responsive">
+            <table class="table table-striped mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Actividad</th>
+                  <th>Tipo</th>
+                  <th>Puntuación</th>
+                  <th>Intento</th>
+                  <th>Tiempo</th>
+                  <th>Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% set seen_activities = [] %}
+                {% for response in level_data.activities %}
+                  {% if response.activity_id not in seen_activities %}
+                    {% for r in level_data.activities %}
+                      {% if r.activity_id == response.activity_id %}
+                        <tr class="{% if r.is_correct %}table-success{% else %}table-danger{% endif %}">
+                          <td>{{ r.activity.title }}</td>
+                          <td>
+                            <small class="badge bg-secondary">{{ r.activity.activity_type }}</small>
+                          </td>
+                          <td><strong>{{ r.score }}</strong></td>
+                          <td>{{ r.attempt_number }}º</td>
+                          <td>{{ '%02d:%02d' % (r.time_spent // 60, r.time_spent % 60) }}</td>
+                          <td>{{ r.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                        </tr>
+                      {% endif %}
+                    {% endfor %}
+                    {% do seen_activities.append(response.activity_id) %}
+                  {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Resumen del nivel -->
+          <div class="p-3 bg-light border-top">
+            <strong>Nota final del nivel:</strong>
+            {{ "%.2f"|format(level_data.final_grade) }}/10 |
+            <strong>Tiempo total:</strong> {{ '%02d:%02d' % (level_data.time_spent // 60, level_data.time_spent % 60) }} |
+            <strong>Intentos:</strong> {{ level_data.attempts }}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Acción final -->
+<div class="mt-4 text-center">
+  <a href="/admin/export/grades" class="btn btn-success">
+    <i class="fas fa-file-csv me-2"></i> Exportar todas las notas
+  </a>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Font Awesome para iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script>
+  // Opcional: agregar funcionalidad de búsqueda o filtrado en el futuro
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Informe de alumno cargado");
+  });
+</script>
+{% endblock %}

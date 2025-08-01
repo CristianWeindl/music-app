@@ -1,0 +1,119 @@
+<!-- templates/auth/register.html -->
+{% extends "base.html" %}
+
+{% block title %}Regístrate - MusicApp Edu{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h2 class="text-center mb-4">📝 Regístrate como alumno</h2>
+
+        <form method="POST" action="/auth/register">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="first_name" class="form-label">Nombre</label>
+              <input
+                type="text"
+                id="first_name"
+                name="first_name"
+                class="form-control"
+                placeholder="Ej: Ana"
+                required
+                autofocus
+              >
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="last_name" class="form-label">Apellidos</label>
+              <input
+                type="text"
+                id="last_name"
+                name="last_name"
+                class="form-control"
+                placeholder="Ej: Martínez López"
+                required
+              >
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="email" class="form-label">Correo institucional</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-control"
+              placeholder="ana.martinez@instituto-escolar.es"
+              required
+            >
+            <small class="text-muted">
+              Debe ser un correo de dominio autorizado.
+            </small>
+          </div>
+
+          <div class="mb-3">
+            <label for="course" class="form-label">Curso y grupo</label>
+            <select id="course" name="course" class="form-select" required>
+              <option value="">Selecciona tu curso</option>
+              <option value="1ºA">1ºA</option>
+              <option value="1ºB">1ºB</option>
+              <option value="2ºA">2ºA</option>
+              <option value="2ºB">2ºB</option>
+              <option value="3ºA">3ºA</option>
+              <option value="3ºB">3ºB</option>
+              <option value="4ºA">4ºA</option>
+              <option value="4ºB">4ºB</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Contraseña</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control"
+              placeholder="Mínimo 6 caracteres"
+              required
+            >
+          </div>
+
+          <!-- Mensaje de error -->
+          {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show">
+              {{ error }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endif %}
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary btn-lg">Crear cuenta</button>
+          </div>
+        </form>
+
+        <div class="text-center mt-3">
+          <small>
+            ¿Ya tienes cuenta? <a href="/auth/login">Inicia sesión</a>
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información sobre dominios permitidos -->
+    <div class="card mt-3">
+      <div class="card-body p-3">
+        <small class="text-muted">
+          <strong>Correos permitidos:</strong>
+          <ul class="mb-0">
+            <li><code>instituto-escolar.es</code></li>
+            <li><code>colegio2025.es</code></li>
+            <li><code>academiamusical.edu</code></li>
+          </ul>
+          Si tu instituto cambia, el profesor actualizará los dominios.
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

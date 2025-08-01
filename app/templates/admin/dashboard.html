@@ -1,0 +1,138 @@
+<!-- templates/admin/dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Panel de Administrador - MusicApp Edu{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <h2 class="d-flex align-items-center">
+      <i class="fas fa-tachometer-alt me-2"></i> Panel de Administrador
+    </h2>
+    <p class="text-muted">Vista general del progreso de los alumnos</p>
+  </div>
+</div>
+
+<!-- Filtros rápidos (futuro: por curso, nivel, etc.) -->
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card text-white bg-primary">
+      <div class="card-body">
+        <h5 class="card-title">{{ students | length }}</h5>
+        <p class="card-text">Alumnos registrados</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-white bg-success">
+      <div class="card-body">
+        <h5 class="card-title">{{ levels | length }}</h5>
+        <p class="card-text">Niveles creados</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card bg-light">
+      <div class="card-body">
+        <h5 class="card-title">{{ progress_data | sum(attribute='completed_levels_count') }}</h5>
+        <p class="card-text">Niveles completados en total</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabla de progreso de alumnos -->
+<div class="card shadow-sm">
+  <div class="card-header bg-white">
+    <h5 class="mb-0">Progreso de los alumnos</h5>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Alumno</th>
+            <th>Curso</th>
+            <th>Nivel actual</th>
+            <th>Niveles completados</th>
+            <th>Tiempo total</th>
+            <th>Última actividad</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in progress_data %}
+            <tr>
+              <td>
+                <strong>{{ item.user.full_name }}</strong><br>
+                <small class="text-muted">{{ item.user.email }}</small>
+              </td>
+              <td><span class="badge bg-secondary">{{ item.user.course }}</span></td>
+              <td>
+                {% if item.current_level %}
+                  <span class="badge bg-primary">Nivel {{ item.current_level.order }}: {{ item.current_level.title }}</span>
+                {% else %}
+                  <span class="badge bg-success">✅ Todos completados</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge bg-info text-dark">{{ item.completed_levels_count }}</span>
+              </td>
+              <td>{{ '%02d:%02d' % (item.total_time_spent // 60, item.total_time_spent % 60) }}</td>
+              <td>
+                {% if item.latest_activity %}
+                  <small>
+                    {{ item.latest_activity.activity.title }}<br>
+                    <span class="text-muted">{{ item.latest_activity.created_at.strftime('%d/%m %H:%M') }}</span>
+                  </small>
+                {% else %}
+                  <span class="text-muted">Nunca</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="/admin/student/{{ item.user.id }}" class="btn btn-sm btn-outline-primary">Ver informe</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Acceso rápido a otras funciones -->
+<div class="row mt-4">
+  <div class="col-md-6">
+    <a href="/levels" class="btn btn-lg btn-warning w-100">
+      <i class="fas fa-layer-group me-2"></i> Gestionar Niveles
+    </a>
+  </div>
+  <div class="col-md-6">
+    <a href="/admin/leaderboard" class="btn btn-lg btn-info text-white w-100">
+      <i class="fas fa-crown me-2"></i> Ver Ranking de Progreso
+    </a>
+  </div>
+</div>
+
+<!-- Exportar notas -->
+<div class="row mt-3">
+  <div class="col-12">
+    <a href="/admin/export/grades" class="btn btn-lg btn-success w-100">
+      <i class="fas fa-file-csv me-2"></i> Exportar Notas Finales (CSV)
+    </a>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Font Awesome para iconos (opcional, pero recomendado) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script>
+  // Opcional: agregar filtros o búsquedas en el futuro
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Dashboard cargado");
+  });
+</script>
+{% endblock %}

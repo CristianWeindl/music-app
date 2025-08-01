@@ -1,0 +1,132 @@
+<!-- templates/student/dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Tu progreso - MusicApp Edu{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <h2>
+      <i class="fas fa-user-graduate me-2"></i> Hola, <strong>{{ user.full_name }}</strong> 👋
+    </h2>
+    <p class="text-muted">
+      Curso: <strong>{{ user.course }}</strong> |
+      Último acceso: <strong>{{ now.strftime('%d/%m/%Y') }}</strong>
+    </p>
+  </div>
+</div>
+
+<!-- Estado del progreso -->
+<div class="row mb-4">
+  <div class="col-md-8">
+    <div class="card shadow-sm border-primary">
+      <div class="card-body">
+        <h4 class="card-title">📚 Tu progreso en la asignatura</h4>
+
+        {% if user.current_level_id %}
+          {% set level = db.query(models.level.Level).filter(models.level.Level.id == user.current_level_id).first() %}
+          {% if level %}
+            <p class="card-text fs-5">
+              Estás en el <strong>Nivel {{ level.order }}: {{ level.title }}</strong>
+            </p>
+            <p class="text-muted">
+              {{ level.description }}
+            </p>
+          {% else %}
+            <p class="card-text fs-5">
+              Listo para comenzar tu primer nivel.
+            </p>
+          {% endif %}
+        {% else %}
+          <p class="card-text fs-5">
+            🎉 ¡Enhorabuena! Has completado todos los niveles disponibles.
+          </p>
+          <p class="text-muted">
+            Puedes seguir practicando o esperar nuevos niveles.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Acceso rápido al ranking -->
+  <div class="col-md-4">
+    <a href="/student/leaderboard" class="card text-white bg-info text-decoration-none h-100">
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title"><i class="fas fa-crown me-2"></i> Ranking</h5>
+        <p class="card-text mb-0">¿Cómo vas comparado con tu clase?</p>
+        <small class="mt-auto">Ver clasificación →</small>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Acciones principales -->
+<div class="row g-4 mb-4">
+  <!-- Continuar con tu nivel -->
+  <div class="col-md-6">
+    <div class="card h-100 shadow-sm border-success">
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title">
+          <i class="fas fa-play-circle text-success me-2"></i> Continuar con tu nivel
+        </h5>
+        <p class="card-text text-muted">
+          Avanza en la asignatura completando el nivel en el que lo dejaste.
+        </p>
+        <div class="mt-auto">
+          {% if user.current_level_id %}
+            <a href="/student/play/{{ user.current_level_id }}" class="btn btn-success btn-lg w-100">
+              Empezar
+            </a>
+          {% else %}
+            <a href="/student/play/1" class="btn btn-success btn-lg w-100" disabled>
+              No hay más niveles
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Repetir niveles pasados -->
+  <div class="col-md-6">
+    <div class="card h-100 shadow-sm border-warning">
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title">
+          <i class="fas fa-redo text-warning me-2"></i> Repetir niveles pasados
+        </h5>
+        <p class="card-text text-muted">
+          Practica niveles anteriores para afianzar lo aprendido.
+        </p>
+        <div class="mt-auto">
+          <a href="/student/practice" class="btn btn-outline-warning btn-lg w-100">
+            Practicar
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Nota motivacional -->
+<div class="row mt-5">
+  <div class="col-12 text-center">
+    <small class="text-muted">
+      La música es un viaje. Cada nivel te acerca más a dominarla. 🎵
+    </small>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Font Awesome para iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script>
+  // Opcional: animación de bienvenida
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Dashboard del alumno cargado");
+  });
+</script>
+{% endblock %}

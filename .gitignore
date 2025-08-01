@@ -1,0 +1,56 @@
+# === Entorno virtual ===
+.venv/
+venv/
+env/
+env*/
+ENV/
+
+# === Base de datos local ===
+*.db
+*.sqlite3
+music_app.db
+
+# === Variables de entorno ===
+.env
+.env.local
+.env.development
+.env.production
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# === FastAPI / Servidor ===
+uvicorn.log
+*.log
+.DS_Store
+
+# === IDE y editores ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# === Sistema ===
+Thumbs.db
+.DS_Store
