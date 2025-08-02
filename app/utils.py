@@ -5,9 +5,16 @@ from datetime import datetime, timedelta
 import random
 import string
 from passlib.hash import bcrypt
-from config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_HOURS, SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, EMAIL_FROM, BASE_URL
-from database import get_db
-from models.user import User
+from app.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_HOURS, SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, EMAIL_FROM, BASE_URL
+from app.database import get_db
+from app.models.user import User
+
+# Variable global para templates (se inyectará desde main.py)
+templates = None
+
+def set_templates(t):
+    global templates
+    templates = t
 
 # === JWT y autenticación ===
 def create_access_token(data: dict, expires_delta: timedelta = None):
@@ -44,8 +51,8 @@ def render_template_with_user(request: Request, template_name: str, context: dic
         user = get_current_user(request, db)
     if "user" not in context:
         context["user"] = user
-    # Asumimos que 'templates' está disponible en main.py
-    from main import templates  # Importación diferida para evitar ciclos
+    if templates is None:
+        raise Exception("Templates no inicializados. Llama a set_templates() en main.py")
     return templates.TemplateResponse(template_name, {"request": request, **context})
 
 # === Generar token de recuperación ===

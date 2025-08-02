@@ -1,14 +1,16 @@
 # app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
 from app.routers import auth, levels, activities, admin
 from app.database import engine, Base
 import app.models.user
 import app.models.level
 import app.models.activity
 import app.models.response
+from app.utils import set_templates
 
-# Crear tablas (solo si usas SQLite y no tienes migraciones)
+# Crear tablas
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -16,6 +18,10 @@ app = FastAPI(
     description="Plataforma educativa de música para secundaria",
     version="1.0.0"
 )
+
+# Configurar plantillas
+templates = Jinja2Templates(directory="app/templates")
+set_templates(templates)  # Inyectar en utils.py
 
 # Middleware
 app.add_middleware(
