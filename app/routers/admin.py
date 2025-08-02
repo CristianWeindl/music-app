@@ -25,13 +25,9 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db), user=
     if error:
         return error
 
-    # Todos los usuarios estudiantes
     students = db.query(User).filter(User.role == "student").all()
-
-    # Todos los niveles
     levels = db.query(Level).order_by(Level.order).all()
 
-    # Progreso por alumno
     progress_data = []
     for student in students:
         student_progress = {
@@ -42,7 +38,6 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db), user=
             "latest_activity": None
         }
 
-        # Calcular tiempo total y última actividad
         responses = db.query(UserActivityResponse).filter(UserActivityResponse.user_id == student.id).all()
         for r in responses:
             student_progress["total_time_spent"] += r.time_spent
@@ -53,7 +48,6 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db), user=
 
         progress_data.append(student_progress)
 
-    # Ordenar por niveles completados (para ranking)
     progress_data.sort(key=lambda x: x["completed_levels_count"], reverse=True)
 
     return render_template_with_user(request, "admin/dashboard.html", {
@@ -74,11 +68,9 @@ async def student_report(student_id: int, request: Request, db: Session = Depend
     if not student:
         raise HTTPException(status_code=404, detail="Alumno no encontrado")
 
-    # Respuestas del alumno
     responses = db.query(UserActivityResponse).filter(UserActivityResponse.user_id == student_id).order_by(
         UserActivityResponse.level_id, UserActivityResponse.activity_id, UserActivityResponse.attempt_number).all()
 
-    # Agrupar por nivel
     report_by_level = {}
     for r in responses:
         level = db.query(Level).filter(Level.id == r.level_id).first()
@@ -95,10 +87,8 @@ async def student_report(student_id: int, request: Request, db: Session = Depend
         report_by_level[level.id]["time_spent"] += r.time_spent
         report_by_level[level.id]["attempts"] += 1
 
-    # Calcular nota final por nivel (último intento)
     final_scores = []
     for level_data in report_by_level.values():
-        # Último intento por actividad
         last_responses = {}
         for r in level_data["activities"]:
             key = r.activity_id
@@ -107,7 +97,6 @@ async def student_report(student_id: int, request: Request, db: Session = Depend
         total_score = 0
         max_possible = 0
         for r in last_responses.values():
-            # Suponemos que "score" es "8/10" → extraemos el numerador
             try:
                 score_str = r.score.replace(",", ".")
                 if "/" in score_str:
@@ -124,10 +113,8 @@ async def student_report(student_id: int, request: Request, db: Session = Depend
         level_data["total_score"] = round(total_score, 2)
         level_data["max_score"] = round(max_possible, 2)
         level_data["final_grade"] = round((total_score / max_possible) * 10 if max_possible > 0 else 0, 2)
-
         final_scores.append(level_data["final_grade"])
 
-    # Nota media final
     final_average = round(sum(final_scores) / len(final_scores), 2) if final_scores else 0
 
     return render_template_with_user(request, "admin/student_report.html", {
@@ -155,14 +142,13 @@ async def class_leaderboard(request: Request, db: Session = Depends(get_db), use
             "current_level": s.current_level_id
         })
 
-    # Ordenar por niveles completados
     leaderboard.sort(key=lambda x: x["completed_levels"], reverse=True)
 
     return render_template_with_user(request, "admin/leaderboard.html", {
         "leaderboard": leaderboard
     }, db=db)
 
-# === Exportar datos (opcional, para copiar a boletines) ===
+# === Exportar datos (CSV para boletines) ===
 @router.get("/export/grades", name="export_grades")
 async def export_grades(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
     error = require_admin(request, db, user)
@@ -176,7 +162,7 @@ async def export_grades(request: Request, db: Session = Depends(get_db), user=De
         responses = db.query(UserActivityResponse).filter(UserActivityResponse.user_id == s.id).all()
         last_scores = {}
         for r in responses:
-            last_scores[r.activity_id] = r  # Sobrescribe → último intento
+            last_scores[r.activity_id] = r
 
         total = 0
         max_total = 0
@@ -202,7 +188,6 @@ async def export_grades(request: Request, db: Session = Depends(get_db), user=De
             "completed_levels": len(s.completed_levels or [])
         })
 
-    # Devolver como texto plano (fácil de copiar a Excel)
     content = "Email,Nombre,Curso,Nota Final,Niveles Completados\n"
     for g in grades_data:
         content += f"{g['email']},{g['full_name']},{g['course']},{g['final_grade']},{g['completed_levels']}\n"

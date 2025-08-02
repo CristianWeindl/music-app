@@ -60,7 +60,7 @@ async def create_activity(
     media_type: str = Form(None),
     media_url: str = Form(None),
     activity_type: str = Form(...),
-    config: str = Form(...),  # Se envía como JSON string desde el formulario
+    config: str = Form(...),  # JSON string desde el formulario
     order_in_level: int = Form(1),
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
@@ -72,7 +72,6 @@ async def create_activity(
     if not level:
         raise HTTPException(status_code=404, detail="Nivel no encontrado")
 
-    # Validar que config sea un JSON válido
     import json
     try:
         config_data = json.loads(config)
@@ -117,7 +116,7 @@ async def edit_activity_form(
     return render_template_with_user(request, "admin/edit_activity.html", {
         "activity": activity,
         "level": activity.level,
-        "config_json": activity.config  # Para mostrar en textarea
+        "config_json": activity.config
     }, db=db)
 
 # === Editar actividad (POST) ===
