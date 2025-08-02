@@ -1,7 +1,7 @@
-# models/activity.py
+# app/models/activity.py
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, JSON, Boolean
 from sqlalchemy.orm import relationship
-from database import Base
+from app.database import Base
 from datetime import datetime
 
 

@@ -1,7 +1,7 @@
-# models/user.py
+# app/models/user.py
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
-from database import Base
+from app.database import Base
 from datetime import datetime
 
 

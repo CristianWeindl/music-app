@@ -6,7 +6,7 @@ from starlette.status import HTTP_303_SEE_OTHER
 from app.models.level import Level
 from app.models.activity import Activity
 from app.database import get_db
-from utils import render_template_with_user, get_current_user
+from app.utils import render_template_with_user, get_current_user  # ✅ Corregido
 
 router = APIRouter(prefix="/levels", tags=["levels"])
 

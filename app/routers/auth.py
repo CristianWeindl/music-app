@@ -1,4 +1,4 @@
-# routers/auth.py
+# app/routers/auth.py
 from fastapi import APIRouter, Request, Form, Depends, Response, HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session

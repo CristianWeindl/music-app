@@ -1,8 +1,6 @@
 # app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-# ✅ Importa con ruta absoluta
 from app.routers import auth, levels, activities, admin
 from app.database import engine, Base
 import app.models.user

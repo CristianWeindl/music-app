@@ -1,7 +1,7 @@
-# models/level.py
+# app/models/level.py
 from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean
 from sqlalchemy.orm import relationship
-from database import Base
+from app.database import Base
 from datetime import datetime
 
 
