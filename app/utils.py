@@ -62,7 +62,7 @@ def generate_reset_token():
 # === Enviar correo de recuperación ===
 def send_password_reset_email(email: str, token: str):
     try:
-        from email.mime.text import MimeText
+        from email.mime.text import MIMEText
         from email.mime.multipart import MIMEMultipart
     except ImportError as e:
         print(f"Error al importar email.mime: {e}")
@@ -87,7 +87,7 @@ def send_password_reset_email(email: str, token: str):
     Saludos,
     El equipo de MusicApp Edu
     """
-    msg.attach(MimeText(body, 'plain'))
+    msg.attach(MIMEText(body, 'plain'))
 
     try:
         import smtplib

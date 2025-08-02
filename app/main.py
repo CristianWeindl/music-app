@@ -1,6 +1,7 @@
 # app/main.py
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.routers import auth, levels, activities, admin
 from app.database import engine, Base
@@ -18,6 +19,9 @@ app = FastAPI(
     description="Plataforma educativa de música para secundaria",
     version="1.0.0"
 )
+
+# Montar archivos estáticos
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # Configurar plantillas
 templates = Jinja2Templates(directory="app/templates")
@@ -38,6 +42,7 @@ app.include_router(levels.router)
 app.include_router(activities.router)
 app.include_router(admin.router)
 
+# === Ruta principal: redirige a login o dashboard ===
 @app.get("/")
-def home():
-    return {"message": "Bienvenido a MusicApp Edu"}
+def home(request: Request):
+    return templates.TemplateResponse("auth/login.html", {"request": request})
