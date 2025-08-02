@@ -1,10 +1,116 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+<!-- templates/admin/edit_level.html -->
+{% extends "base.html" %}
+
+{% block title %}Editar Nivel {{ level.order }} - MusicApp Edu{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center">
+      <h2>
+        <i class="fas fa-edit me-2"></i> Editar Nivel {{ level.order }}
+      </h2>
+      <a href="/levels" class="btn btn-outline-secondary btn-sm">← Volver</a>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form method="POST" action="/levels/edit/{{ level.id }}">
+
+      <!-- Título -->
+      <div class="mb-3">
+        <label for="title" class="form-label">Título del nivel</label>
+        <input
+          type="text"
+          id="title"
+          name="title"
+          class="form-control"
+          value="{{ level.title }}"
+          required
+        >
+      </div>
+
+      <!-- Descripción -->
+      <div class="mb-3">
+        <label for="description" class="form-label">Descripción</label>
+        <textarea
+          id="description"
+          name="description"
+          class="form-control"
+          rows="4"
+          placeholder="Objetivos del nivel, contenidos, etc."
+        >{{ level.description }}</textarea>
+      </div>
+
+      <!-- Orden -->
+      <div class="mb-3">
+        <label for="order" class="form-label">Orden</label>
+        <input
+          type="number"
+          id="order"
+          name="order"
+          class="form-control"
+          value="{{ level.order }}"
+          min="1"
+          required
+        >
+        <small class="text-muted">Define el orden en que los alumnos avanzan.</small>
+      </div>
+
+      <!-- Publicado -->
+      <div class="mb-3 form-check">
+        <input
+          type="checkbox"
+          id="is_published"
+          name="is_published"
+          class="form-check-input"
+          {% if level.is_published %}checked{% endif %}
+        >
+        <label class="form-check-label" for="is_published">
+          <strong>Publicado</strong> — Los alumnos pueden ver este nivel
+        </label>
+      </div>
+
+      <!-- Práctica permitida -->
+      <div class="mb-3 form-check">
+        <input
+          type="checkbox"
+          id="is_practice_allowed"
+          name="is_practice_allowed"
+          class="form-check-input"
+          {% if level.is_practice_allowed %}checked{% endif %}
+        >
+        <label class="form-check-label" for="is_practice_allowed">
+          <strong>Permitir práctica</strong> — Pueden repetir este nivel después
+        </label>
+      </div>
+
+      <!-- Mensaje de error -->
+      {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show">
+          {{ error }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endif %}
+
+      <!-- Botones -->
+      <div class="d-grid gap-2 d-md-flex mt-4">
+        <button type="submit" class="btn btn-primary btn-lg">
+          Guardar cambios
+        </button>
+        <a href="/levels" class="btn btn-outline-secondary btn-lg">
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
