@@ -1,6 +1,7 @@
 # app/main.py
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.sessions import SessionMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.routers import auth, levels, activities, admin
@@ -23,10 +24,6 @@ app = FastAPI(
 # Montar archivos estáticos
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-# Configurar plantillas
-templates = Jinja2Templates(directory="app/templates")
-set_templates(templates)  # Inyectar en utils.py
-
 # Middleware
 app.add_middleware(
     CORSMiddleware,
@@ -35,6 +32,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Añadir SessionMiddleware (requerido para request.session)
+app.add_middleware(SessionMiddleware, secret_key="tu_clave_secreta_muy_larga_y_segura")
+
+# Configurar plantillas
+templates = Jinja2Templates(directory="app/templates")
+set_templates(templates)  # Inyectar en utils.py
 
 # Incluir routers
 app.include_router(auth.router)
