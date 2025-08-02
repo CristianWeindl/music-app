@@ -3,9 +3,9 @@ from fastapi import APIRouter, Request, Form, Depends, HTTPException, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_303_SEE_OTHER
-from models.activity import Activity
-from models.level import Level
-from database import get_db
+from app.models.activity import Activity
+from app.models.level import Level
+from app.database import get_db
 from utils import render_template_with_user, get_current_user
 
 router = APIRouter(prefix="/activities", tags=["activities"])

@@ -4,9 +4,9 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from passlib.hash import bcrypt
 from datetime import datetime, timedelta
-from models.user import User
-from database import get_db
-from utils import render_template_with_user, create_access_token, get_current_user, generate_reset_token, send_password_reset_email
+from app.models.user import User
+from app.database import get_db
+from app.utils import render_template_with_user, create_access_token, get_current_user, generate_reset_token, send_password_reset_email
 import config
 
 router = APIRouter(prefix="/auth", tags=["auth"])
