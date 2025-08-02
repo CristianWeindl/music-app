@@ -1,15 +1,13 @@
-# utils.py
+# app/utils.py
 from fastapi import Request
 from jose import jwt
 from datetime import datetime, timedelta
-import smtplib
-from email.mime.text import MimeText
-from email.mime.multipart import MIMEMultipart
+import random
+import string
+from passlib.hash import bcrypt
 from config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_HOURS, SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, EMAIL_FROM, BASE_URL
 from database import get_db
 from models.user import User
-import random
-import string
 
 # === JWT y autenticación ===
 def create_access_token(data: dict, expires_delta: timedelta = None):
@@ -46,8 +44,7 @@ def render_template_with_user(request: Request, template_name: str, context: dic
         user = get_current_user(request, db)
     if "user" not in context:
         context["user"] = user
-    # Aquí asumo que usas un motor Jinja2 llamado 'templates'
-    # Ajusta según tu configuración real
+    # Asumimos que 'templates' está disponible en main.py
     from main import templates  # Importación diferida para evitar ciclos
     return templates.TemplateResponse(template_name, {"request": request, **context})
 
@@ -57,6 +54,13 @@ def generate_reset_token():
 
 # === Enviar correo de recuperación ===
 def send_password_reset_email(email: str, token: str):
+    try:
+        from email.mime.text import MimeText
+        from email.mime.multipart import MIMEMultipart
+    except ImportError as e:
+        print(f"Error al importar email.mime: {e}")
+        return False
+
     msg = MIMEMultipart()
     msg['From'] = EMAIL_FROM
     msg['To'] = email
@@ -79,6 +83,7 @@ def send_password_reset_email(email: str, token: str):
     msg.attach(MimeText(body, 'plain'))
 
     try:
+        import smtplib
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
         server.login(SMTP_USERNAME, SMTP_PASSWORD)
