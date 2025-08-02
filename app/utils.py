@@ -9,7 +9,7 @@ from app.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_HOURS, SMTP_SE
 from app.database import get_db
 from app.models.user import User
 
-# Variable global para templates (se inyectará desde main.py)
+# Variable global para templates (inyectada desde main.py)
 templates = None
 
 def set_templates(t):
