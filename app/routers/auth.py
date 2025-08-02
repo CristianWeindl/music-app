@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from app.models.user import User
 from app.database import get_db
 from app.utils import render_template_with_user, create_access_token, get_current_user, generate_reset_token, send_password_reset_email
-import config
+import app.config
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -32,10 +32,9 @@ async def register(
     if user:
         return render_template_with_user(request, "auth/register.html", {"error": "Este correo ya está registrado."}, db=db)
 
-    # Validar dominio institucional
-    if not User(email=email, first_name=first_name, last_name=last_name).is_institutional_email(config.ALLOWED_INSTITUTIONAL_DOMAINS):
+    if not User(email=email, first_name=first_name, last_name=last_name).is_institutional_email(app.config.ALLOWED_INSTITUTIONAL_DOMAINS):
         return render_template_with_user(request, "auth/register.html", {
-            "error": f"Debes usar un correo de dominio autorizado: {', '.join(config.ALLOWED_INSTITUTIONAL_DOMAINS)}"
+            "error": f"Debes usar un correo de dominio autorizado: {', '.join(app.config.ALLOWED_INSTITUTIONAL_DOMAINS)}"
         }, db=db)
 
     hashed_password = bcrypt.hash(password)
@@ -100,13 +99,11 @@ async def forgot_password(
             "message": "Si el correo existe, recibirás un enlace para recuperar tu contraseña."
         }, db=db)
 
-    # Generar token
     token = generate_reset_token()
     user.reset_token = token
     user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
     db.commit()
 
-    # Enviar correo
     send_password_reset_email(email, token)
 
     return render_template_with_user(request, "auth/forgot_password.html", {
