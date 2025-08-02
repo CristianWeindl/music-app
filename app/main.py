@@ -33,7 +33,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Añadir SessionMiddleware (requerido para request.session)
+# ✅ Añadir SessionMiddleware (obligatorio para request.session)
 app.add_middleware(SessionMiddleware, secret_key="tu_clave_secreta_muy_larga_y_segura")
 
 # Configurar plantillas
